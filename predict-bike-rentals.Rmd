@@ -1,0 +1,197 @@
+---
+title: "Bike Rental Predictive Modeling Project"
+author: "Samantha Simpson"
+date: '2021-12-10'
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Problem Setup
+
+For this project, the dataset that I chose is the 'Bike Sharing Dataset,' found at https://archive.ics.uci.edu/ml/datasets/bike+sharing+dataset. The response variable for this dataset is the number of bike rentals per day, and the predictor variables are a set of seasonal and environmental factors that may affect the number of bike rentals. 
+
+The response variable for this dataset is the total number of bike rentals per day. Therefore, I felt that a linear or polynomial regression model to predict new values would be the best suited to this data, instead of a classification model. 
+
+# Statistical Question
+
+How can we predict the number of bike rentals on a given day, given environmental and seasonal factors pertaining to that day?
+
+# Data Characteristics
+
+The following are the variables included in the bike sharing dataset:
+
+__Date:__ The date of each day being recorded.
+
+__Season:__ The season of each day being recorded. 1 corresponds to Spring, 2 corresponds to Summer, 3 corresponds to Autumn, and 4 corresponds to Winter.
+
+__Year:__ A value of '0' if the year was 2011, or '1' if the year was 2012.
+
+__Month:__ A value from 1 to 12 corresponding to which month of the year it was.
+
+__Holiday:__ A value of '1' if the day is a holiday, or '0' if the day is not a holiday.
+
+__Weekday:__ A value from 0 to 6 corresponding to which day of the week it was. 0 Corresponds to Sunday, 1 to Monday, et cetera. 
+
+__Working Day:__ A value of '1' if the day is neither a weekend nor a holiday, or '0' if the day was a weekend or a holiday.
+
+__Weather:__ The weather of each day being recorded. 1 corresponds to Clear, Few Clouds, or Partly Cloudy. 2 Corresponds to Mist + Cloudy, Mist + Broken Clouds, Mist + Few Clouds, or Mist. 3 corresponds to Light Snow, Light Rain + Thunderstorm + Scattered CLouds, or Light Rain + Scattered Clouds. 4 corresponds to Heavy Rain + Ice Pellets + Thunderstorm + Mist, or Snow + Fog. However, I noticed when viewing the data that there are no instances of a category '4' day for this variable, and thus it only has values of 1, 2, or 3.
+
+__Temperature:__ The temperature, normalized, in Celsius.
+
+__Temperature (Feels Like):__ The 'Feeling Temperature,' normalized, in Celsius. 
+
+__Humidity:__ Humidity, normalized.
+
+__Wind speed:__ Wind speed, normalized. 
+
+__Casual Users:__ Count of bike rentals from 'casual' users, who are not registered with the rental company.
+
+__Registered Users:__ Count of bike rentals from users who are registered with the rental company.
+
+__User Count:__ Count of total bike rentals, including both casual users and registered users.
+
+# Initial Exploration
+
+To begin with, I made plots of each individual explanatory variable in order to see if any patterns were immediately apparent. I chose not to examine the first two columns, "instant" and "date," because they both function as indices for this data and thus would not be useful for a regression model. I made boxplots for the categorical variables: season, year, month, holiday, weekday, working day, and weather. I made scatterplots for the continuous variables: temperature, temperature (feels like), humidity, and wind speed. I colored the points on these scatterplots first by season, and then by weather, because from the boxplots these appeared to be the most relevant to explaining changes in the rental count. For the season colors, I chose to use yellow for spring, green for summer, red for autumn, and blue for winter. For the weather colors, I chose to use green for 1, a clear or partly cloudy day, blue for 2, a misty or cloudy day, and red for 3, a rainy or snowy day. I then made separate scatterplots for the continuous variables that showed the relationships between these explanatory variables and both registered and casual users. For these, registered users were colored in blue and casual users were colored in red. 
+
+These initial graphs show that the season, the weather, and the temperature appear to have the most significant effect on the number of bike rentals on a given day. The graphs also indicate that there is a significant difference in the number of registered users versus the number of casual users. Because the total rental count for each day is simply the sum of the number of registered users and the number of casual users, we cannot use these variables to predict total count. So, it appears that we may predict the number of bike rentals far more accurately if we create two models from the data: one for registered users, and one for casual users.
+
+# Creating a Linear Model
+
+To begin with, I made a simple linear model that uses each of the 11 predictor variables to predict the total rental count. These predictor variables are season, year, month, holiday, weekday, working day, weather, temperature, temperature (feels like), humidity, and wind speed. I also made two separate simple linear models that use these predictor variables to predict the rental count of casual users and the rental count of registered users. I then calculated the variance inflation factor of each variable in these models to check for multicollinearity before proceeding. 
+
+Intuitively, I felt that it would be necessary to remove some variables in order to create a better model. For example, the "month" variable and the "season" variable are basically redundant; knowing what month it is tells us what season it is. I also felt that the holiday variable should probably be removed, because knowing the day of the week and whether or not it was a working day gives us the same information.
+
+The variance inflation factors show that the temperature variable and the temperature (feels like) variable have an extremely high collinearity. This makes sense, because these variables are almost always going to be quite close to each other. I therefore chose to remove the 'temperature' variable from each model and only use 'temperature (feels like),' as the latter appeared to be more statistically significant in each model.
+
+I then chose to remove the 'month' and 'holiday' variables from each model, because they appeared to not be statistically significant. As I discussed earlier, it makes sense that these variables are superfluous given the other data available for the model. I also removed the 'season' variable from the model that only predicted the number of rentals from casual users, because it proved to not be statistically significant.
+
+The resulting linear model to predict the total count of bike rentals then uses the following variables: season, year, weekday, working day, weather, temperature (feels like), humidity, and windspeed. It has a multiple r-squared value of 0.7963, which is good. However, the residual standard error is 879.2 on 722 degrees of freedom, which is quite high. We would hope to produce a model with lower error than this. 
+
+The linear model to predict the count of bike rentals from registered users uses the following variables: season, year, weekday, working day, weather, temperature (feels like), humidity, and windspeed. It has a multiple r-squared value of 0.8147, which is good.The residual standard error is 675.4 on 722 degrees of freedom. Like the previous model, this error is quite high, although it is better than the previous model.
+
+The linear model to predict the count of bike rentals from casual users uses the following variables: year, weekday, working day, weather, temperature (feels like), humidity, and windspeed. It has a multiple r-squared value of 0.6797, which is not quite as good as the previous two models. The residual standard error is 390.5 on 723 degrees of freedom. This is better than the previous two models, but still quite high.
+
+The extremely high variability in the residuals of these models indicates the need for a better model. 
+
+# Creating a natural spline model
+
+In order to better predict the number of bike rentals, I then chose to create two models which use natural splines. I chose to discard the idea of predicting the total count and only create two models, one for the rental count from registered users and one for the rental count from casual users. I felt that because total count is simply the sum of registered and casual renters, it was superfluous to attempt to create that model as well as the other two. From the graphs that I created, it seems apparent that there is a significant difference between casual and registered users, and thus it seems appropriate to model these two separately.
+
+The natural spline models use the same variables as the original linear models. The model for registered users uses season, year, weekday, working day, weather, temperature (feels like), humidity, and windspeed. The model for casual users uses year, weekday, weather, temperature (feels like), humidity, and windspeed. Because some of the data was categorical, I did not need to use splines for some variables. I chose to use splines on the continuous data: temperature, humidity, and windspeed. I chose four knots for each variable. 
+
+The natural spline model to predict the count of bike rentals from registered users has a multiple r-squared value of 0.8733. The residual standard error is 561.3 on 713 degrees of freedom. This model performs significantly better than the linear model previously created. The error is much lower, and the coefficient of determination is higher. From these results we can estimate that about 87% of the variance in the number of bike rentals from registered users can be explained by this model.
+
+The natural spline model to predict the count of bike rentals from casual users has a multiple r-squared value of 0.749. The residual standard error is 347.8 on 714 degrees of freedom. This model performs significantly better than the linear model previously created.The error is lower and the coefficient of determination is higher. From these results we can estimate that about 74.9% of the variance in the number of bike rentals from casual users can be explained by this model. 
+
+# Conclusion
+
+In this project, I created several different statistical models to predict the number of bike rentals on any given day given a set of environmental and seasonal variables pertaining to that day. I created a generic linear model, and then performed significance testing to reduce the number of dimensions needed for the model. I then split the model into two to predict the number of rentals from casual users and the number of rentals from registered users separately. This was done to produce a more accurate number of the total number of bike rentals. 
+
+These linear models had a high amount of error, so I created models using natural splines to predict the number of rentals from casual and registered users separately. These two models performed significantly better than the original linear model.
+
+Possible next steps for this project could include testing different numbers of splines, or perhaps testing a different type of predictive model, such as a generalized additive model.
+
+
+``` {r initialExploration}
+dat <- read.csv("./day.csv")
+
+# Initial boxplots for categorical explanatory variables
+boxplot(dat$cnt ~ dat$season)
+boxplot(dat$cnt ~ dat$yr)
+boxplot(dat$cnt ~ dat$mnth)
+boxplot(dat$cnt ~ dat$holiday)
+boxplot(dat$cnt ~ dat$weekday)
+boxplot(dat$cnt ~ dat$workingday)
+boxplot(dat$cnt ~ dat$weathersit)
+
+# Creating a new column that colors the data by which season it was
+dat$seasoncolor <- "yellow"
+dat$weathercolor <- "green"
+for(i in 1:731){
+  if (dat[i, 3] == 2){
+    dat[i,'seasoncolor'] = "green"
+  } else if (dat[i, 3] == 3){
+    dat[i,'seasoncolor'] = "red"
+  } else if (dat[i,3] == 4){
+    dat[i, 'seasoncolor'] = "blue"
+  }
+  
+  if (dat[i, 9] == 2){
+    dat[i,'weathercolor'] = "blue"
+  } else if (dat[i, 9] == 3){
+    dat[i,'weathercolor'] = "red"
+  } 
+}
+
+# Scatterplots of continuous data, colored by season
+plot(dat$temp, dat$cnt, col=dat$seasoncolor)
+plot(dat$atemp, dat$cnt, col=dat$seasoncolor)
+plot(dat$hum, dat$cnt, col=dat$seasoncolor)
+plot(dat$windspeed, dat$cnt, col=dat$seasoncolor)
+
+# Scatterplots of continuous data, colored by weather
+plot(dat$temp, dat$cnt, col=dat$weathercolor)
+plot(dat$atemp, dat$cnt, col=dat$weathercolor)
+plot(dat$hum, dat$cnt, col=dat$weathercolor)
+plot(dat$windspeed, dat$cnt, col=dat$weathercolor)
+
+# Scatterplots of continuous data, colored by casual and registered users
+plot(dat$temp, dat$cnt, col="gray")
+points(dat$temp, dat$casual, col="red")
+points(dat$temp, dat$registered, col="blue")
+
+plot(dat$atemp, dat$cnt, col="gray")
+points(dat$atemp, dat$casual, col="red")
+points(dat$atemp, dat$registered, col="blue")
+
+plot(dat$hum, dat$cnt, col="gray")
+points(dat$hum, dat$casual, col="red")
+points(dat$hum, dat$registered, col="blue")
+
+plot(dat$windspeed, dat$cnt, col="gray")
+points(dat$windspeed, dat$casual, col="red")
+points(dat$windspeed, dat$registered, col="blue")
+
+```
+
+``` {r linearmodels}
+library(car)
+
+# Initial linear models using every predictor variable, and variance inflation factors.
+total_lm1 <- lm(cnt ~ season + yr + mnth + holiday + weekday + workingday + weathersit + temp + atemp + hum + windspeed, data = dat)
+casual_lm1 <- lm(casual ~ season + yr + mnth + holiday + weekday + workingday + weathersit + temp + atemp + hum + windspeed, data = dat)
+registered_lm1 <- lm(registered ~ season + yr + mnth + holiday + weekday + workingday + weathersit + temp + atemp + hum + windspeed, data = dat)
+summary(total_lm1)
+vif(total_lm1)
+summary(casual_lm1)
+vif(casual_lm1)
+summary(registered_lm1)
+vif(registered_lm1)
+
+# Second set of linear models, using a reduced number of predictor variables
+total_lm2 <- lm(cnt ~ season + yr + weekday + workingday + weathersit + atemp + hum + windspeed, data = dat)
+casual_lm2 <- lm(casual ~ yr + weekday + workingday + weathersit + atemp + hum + windspeed, data = dat)
+registered_lm2 <- lm(registered ~ season + yr + weekday + workingday + weathersit + atemp + hum + windspeed, data = dat)
+summary(total_lm2)
+summary(casual_lm2)
+summary(registered_lm2)
+
+```
+
+``` {r splines}
+library(splines)
+# Creating a natural spline model for registered users
+reg.ns <- lm(registered ~ season + yr + weekday + workingday + weathersit + ns(atemp, 4) + ns(hum, 4) + ns(windspeed, 4) , data = dat)
+summary(reg.ns)
+
+# Creating a natural spline model for casual users
+cas.ns <- lm(casual ~ yr + weekday + workingday + weathersit + ns(atemp, 4) + ns(hum, 4) + ns(windspeed, 4) , data = dat)
+summary(cas.ns)
+
+```
