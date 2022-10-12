@@ -1,31 +1,25 @@
 ---
 title: "Bike Rental Predictive Modeling Project"
-knit: (function(input_file, encoding) {
-  out_dir <- 'docs';
-  rmarkdown::render(input_file,
-    encoding=encoding,
-    output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 author: "Samantha Simpson"
 date: '2021-12-10'
-output:
-  html_document: default
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Problem Setup
+## Problem Setup
 
 For this project, the dataset that I chose is the 'Bike Sharing Dataset,' found at https://archive.ics.uci.edu/ml/datasets/bike+sharing+dataset. The response variable for this dataset is the number of bike rentals per day, and the predictor variables are a set of seasonal and environmental factors that may affect the number of bike rentals. 
 
 The response variable for this dataset is the total number of bike rentals per day. Therefore, I felt that a linear or polynomial regression model to predict new values would be the best suited to this data, instead of a classification model. 
 
-# Statistical Question
+## Statistical Question
 
 How can we predict the number of bike rentals on a given day, given environmental and seasonal factors pertaining to that day?
 
-# Data Characteristics
+## Data Characteristics
 
 The following are the variables included in the bike sharing dataset:
 
@@ -59,13 +53,13 @@ __Registered Users:__ Count of bike rentals from users who are registered with t
 
 __User Count:__ Count of total bike rentals, including both casual users and registered users.
 
-# Initial Exploration
+## Initial Exploration
 
 To begin with, I made plots of each individual explanatory variable in order to see if any patterns were immediately apparent. I chose not to examine the first two columns, "instant" and "date," because they both function as indices for this data and thus would not be useful for a regression model. I made boxplots for the categorical variables: season, year, month, holiday, weekday, working day, and weather. I made scatterplots for the continuous variables: temperature, temperature (feels like), humidity, and wind speed. I colored the points on these scatterplots first by season, and then by weather, because from the boxplots these appeared to be the most relevant to explaining changes in the rental count. For the season colors, I chose to use yellow for spring, green for summer, red for autumn, and blue for winter. For the weather colors, I chose to use green for 1, a clear or partly cloudy day, blue for 2, a misty or cloudy day, and red for 3, a rainy or snowy day. I then made separate scatterplots for the continuous variables that showed the relationships between these explanatory variables and both registered and casual users. For these, registered users were colored in blue and casual users were colored in red. 
 
 These initial graphs show that the season, the weather, and the temperature appear to have the most significant effect on the number of bike rentals on a given day. The graphs also indicate that there is a significant difference in the number of registered users versus the number of casual users. Because the total rental count for each day is simply the sum of the number of registered users and the number of casual users, we cannot use these variables to predict total count. So, it appears that we may predict the number of bike rentals far more accurately if we create two models from the data: one for registered users, and one for casual users.
 
-# Creating a Linear Model
+## Creating a Linear Model
 
 To begin with, I made a simple linear model that uses each of the 11 predictor variables to predict the total rental count. These predictor variables are season, year, month, holiday, weekday, working day, weather, temperature, temperature (feels like), humidity, and wind speed. I also made two separate simple linear models that use these predictor variables to predict the rental count of casual users and the rental count of registered users. I then calculated the variance inflation factor of each variable in these models to check for multicollinearity before proceeding. 
 
@@ -83,7 +77,7 @@ The linear model to predict the count of bike rentals from casual users uses the
 
 The extremely high variability in the residuals of these models indicates the need for a better model. 
 
-# Creating a natural spline model
+## Creating a natural spline model
 
 In order to better predict the number of bike rentals, I then chose to create two models which use natural splines. I chose to discard the idea of predicting the total count and only create two models, one for the rental count from registered users and one for the rental count from casual users. I felt that because total count is simply the sum of registered and casual renters, it was superfluous to attempt to create that model as well as the other two. From the graphs that I created, it seems apparent that there is a significant difference between casual and registered users, and thus it seems appropriate to model these two separately.
 
@@ -93,7 +87,7 @@ The natural spline model to predict the count of bike rentals from registered us
 
 The natural spline model to predict the count of bike rentals from casual users has a multiple r-squared value of 0.749. The residual standard error is 347.8 on 714 degrees of freedom. This model performs significantly better than the linear model previously created.The error is lower and the coefficient of determination is higher. From these results we can estimate that about 74.9% of the variance in the number of bike rentals from casual users can be explained by this model. 
 
-# Conclusion
+## Conclusion
 
 In this project, I created several different statistical models to predict the number of bike rentals on any given day given a set of environmental and seasonal variables pertaining to that day. I created a generic linear model, and then performed significance testing to reduce the number of dimensions needed for the model. I then split the model into two to predict the number of rentals from casual users and the number of rentals from registered users separately. This was done to produce a more accurate number of the total number of bike rentals. 
 
