@@ -1,9 +1,13 @@
 ---
 title: "Bike Rental Predictive Modeling Project"
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+    encoding=encoding,
+    output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 author: "Samantha Simpson"
 date: '2021-12-10'
 output:
-  pdf_document: default
   html_document: default
 ---
 
